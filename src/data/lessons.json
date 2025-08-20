@@ -1,0 +1,93 @@
+[
+  {
+    "key": "agriculture",
+    "title": "Agricultura sostenible",
+    "badge": "badge_agriculture.png",
+    "slides": [
+      { "type": "intro",   "title": "¡Hora de sembrar!", "body": "Descubre prácticas que cuidan el suelo y ahorran agua." },
+      { "type": "video",   "video": "agriculture_intro.mp4" },
+
+      { "type": "content", "title": "Rotación de cultivos",  "body": "Cambiar el cultivo cada temporada mantiene el suelo fértil.",   "image": "rotacion.png" },
+      { "type": "content", "title": "Compostaje",            "body": "Los restos orgánicos se convierten en abono natural.",          "image": "compost.png" },
+      { "type": "content", "title": "Uso eficiente del agua","body": "El riego por goteo ahorra hasta 60 % de agua.",                  "image": "riego.png" },
+      { "type": "content", "title": "Biodiversidad",         "body": "Variar plantas atrae insectos benéficos y protege la cosecha.", "image": "biodiversidad.png" },
+
+      { "type": "preQuiz", "title": "¡Vamos al Quiz!", "body": "¿Listo para poner a prueba lo aprendido?" }
+    ],
+    "quiz": [
+      { "question": "¿Qué práctica mantiene fértil el suelo?",            "options": ["Monocultivo", "Rotación de cultivos", "Incendio controlado"], "answer": 1 },
+      { "question": "¿Qué se obtiene al descomponer restos orgánicos?",   "options": ["Composta", "Plástico", "Arena"],                               "answer": 0 },
+      { "question": "¿Cuánta agua ahorra el riego por goteo?",            "options": ["10 %", "30 %", "Hasta 60 %"],                                  "answer": 2 },
+      { "question": "Cultivar distintas plantas ayuda a…",                "options": ["Aumentar plagas", "Atraer insectos benéficos", "Contaminar el suelo"], "answer": 1 }
+    ]
+  },
+
+  {
+    "key": "water",
+    "title": "Cuidado del agua",
+    "badge": "badge_water.png",
+    "slides": [
+      { "type": "intro",   "title": "Cada gota cuenta", "body": "Solo 1 % del agua del planeta es potable. ¡Aprendamos a cuidarla!" },
+      { "type": "video",   "video": "water_intro.mp4" },
+
+      { "type": "content", "title": "Solo un poquito es dulce", "body": "Apenas 1 % del agua del planeta es potable.",                         "image": "gota.png" },
+      { "type": "content", "title": "Hábitos en casa",          "body": "Cierra la llave mientras te cepillas y toma duchas cortas.",        "image": "ducha.png" },
+      { "type": "content", "title": "No la ensuciemos",         "body": "Nunca tires aceite ni pilas al desagüe; contaminan ríos y mares.",  "image": "desague.png" },
+      { "type": "content", "title": "Reutiliza y recoge lluvia", "body": "Junta agua de lluvia para regar plantas y lavar el auto.",          "image": "lluvia.png" },
+
+      { "type": "preQuiz", "title": "¡Vamos al Quiz!", "body": "¿Preparado para demostrar lo que sabes?" }
+    ],
+    "quiz": [
+      { "question": "¿Qué porcentaje del agua del planeta es potable?", "options": ["1 %", "10 %", "25 %"], "answer": 0 },
+      { "question": "Una forma sencilla de ahorrar agua en casa es…",   "options": ["Dejar la llave abierta", "Duchas cortas", "Regar al mediodía"], "answer": 1 },
+      { "question": "¿Qué objeto NUNCA debe tirarse al fregadero?",     "options": ["Aceite usado", "Agua de lluvia", "Jugo"], "answer": 0 },
+      { "question": "Recolectar agua de lluvia sirve para…",            "options": ["Regar plantas", "Beberla sin filtrar", "Nada"], "answer": 0 }
+    ]
+  },
+
+  {
+    "key": "air",
+    "title": "Calidad del aire",
+    "badge": "badge_air.png",
+    "slides": [
+      { "type": "intro",   "title": "Respira profundo", "body": "Conozcamos cómo mantener nuestro aire limpio y saludable." },
+      { "type": "video",   "video": "air_intro.mp4" },
+
+      { "type": "content", "title": "Aire limpio = salud",      "body": "Pulmones felices dependen de un aire sin gases tóxicos.",          "image": "pulmones.png" },
+      { "type": "content", "title": "Fuentes de contaminación", "body": "Autos, fábricas y quemar basura ensucian el cielo.",               "image": "humo.png" },
+      { "type": "content", "title": "Lo que tú puedes hacer",   "body": "Camina, usa bici o comparte auto: cada viaje limpio cuenta.",      "image": "bici.png" },
+      { "type": "content", "title": "Planta un árbol",          "body": "Los árboles filtran polvo y producen oxígeno.",                    "image": "arbol.png" },
+
+      { "type": "preQuiz", "title": "¡Vamos al Quiz!", "body": "¡Demuestra lo que aprendiste!" }
+    ],
+    "quiz": [
+      { "question": "¿Qué órgano del cuerpo sufre si el aire está sucio?", "options": ["Rodillas", "Pulmones", "Orejas"], "answer": 1 },
+      { "question": "Una causa común de aire contaminado es…",             "options": ["Sembrar flores", "Autos con humo", "Lluvia"], "answer": 1 },
+      { "question": "Moverte en bicicleta ayuda porque…",                  "options": ["No produce gases", "Es más lenta", "Gasta más energía"], "answer": 0 },
+      { "question": "Los árboles mejoran el aire porque…",                 "options": ["Crean sombra", "Filtran contaminantes", "Hacen ruido"], "answer": 1 }
+    ]
+  },
+
+  {
+    "key": "pollution",
+    "title": "Gestión de residuos",
+    "badge": "badge_pollution.png",
+    "slides": [
+      { "type": "intro",   "title": "Menos basura, mejor planeta", "body": "Aprende a reducir, reutilizar y reciclar cada día." },
+      { "type": "video",   "video": "pollution_intro.mp4" },
+
+      { "type": "content", "title": "Basura por todos lados",       "body": "Botellas plásticas pueden tardar cientos de años en degradarse.", "image": "basura.png" },
+      { "type": "content", "title": "Las 3 R",                      "body": "Reducir, Reutilizar y Reciclar son la clave para menos desechos.", "image": "3r.png" },
+      { "type": "content", "title": "Separación en casa",           "body": "Orgánicos a composta; plásticos y papel al reciclaje.",            "image": "separacion.png" },
+      { "type": "content", "title": "No al plástico de un solo uso", "body": "Usa termos, bolsas y vasos reutilizables.",                       "image": "reutilizable.png" },
+
+      { "type": "preQuiz", "title": "¡Vamos al Quiz!", "body": "¡Último paso para tu insignia!" }
+    ],
+    "quiz": [
+      { "question": "¿Cuánto tiempo tarda en degradarse una botella plástica?", "options": ["1 año", "10 años", "Cientos de años"], "answer": 2 },
+      { "question": "La primera R de las 3 R es…",                               "options": ["Reciclar", "Reducir", "Reparar"],       "answer": 1 },
+      { "question": "¿Dónde deben ir los restos de comida?",                     "options": ["Reciclaje", "Composta", "Bote gris"],    "answer": 1 },
+      { "question": "Un ejemplo de plástico de un solo uso es…",                 "options": ["Vaso desechable", "Botella de metal", "Lonchera"], "answer": 0 }
+    ]
+  }
+]
