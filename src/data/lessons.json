@@ -7,10 +7,29 @@
       { "type": "intro",   "title": "¡Hora de sembrar!", "body": "Descubre prácticas que cuidan el suelo y ahorran agua." },
       { "type": "video",   "video": "agriculture_intro.mp4" },
 
-      { "type": "content", "title": "Rotación de cultivos",  "body": "Cambiar el cultivo cada temporada mantiene el suelo fértil.",   "image": "rotacion.png" },
-      { "type": "content", "title": "Compostaje",            "body": "Los restos orgánicos se convierten en abono natural.",          "image": "compost.png" },
-      { "type": "content", "title": "Uso eficiente del agua","body": "El riego por goteo ahorra hasta 60 % de agua.",                  "image": "riego.png" },
-      { "type": "content", "title": "Biodiversidad",         "body": "Variar plantas atrae insectos benéficos y protege la cosecha.", "image": "biodiversidad.png" },
+      { "type": "content", 
+        "title": "Rotación de cultivos",  
+        "body": "Cambiar el cultivo cada temporada mantiene el suelo fértil.",   
+        "image": "rotacion.png", 
+        "audio": "rotacion_de_cultivos.mp3"},
+        
+      { "type": "content", 
+        "title": "Compostaje",            
+        "body": "Los restos orgánicos se convierten en abono natural.",          
+        "image": "compost.png",
+        "audio": "compostaje.mp3"},
+        
+      { "type": "content", 
+        "title": "Uso eficiente del agua",
+        "body": "El riego por goteo ahorra hasta 60 % de agua.",
+        "image": "riego.png",
+        "audio": "uso_eficiente_deagua.mp3" },
+        
+      { "type": "content", 
+        "title": "Biodiversidad",         
+        "body": "Variar plantas atrae insectos benéficos y protege la cosecha.", 
+        "image": "biodiversidad.png",
+        "audio": "biodiversidad.mp3" },
 
       { "type": "preQuiz", "title": "¡Vamos al Quiz!", "body": "¿Listo para poner a prueba lo aprendido?" }
     ],
@@ -30,10 +49,29 @@
       { "type": "intro",   "title": "Cada gota cuenta", "body": "Solo 1 % del agua del planeta es potable. ¡Aprendamos a cuidarla!" },
       { "type": "video",   "video": "water_intro.mp4" },
 
-      { "type": "content", "title": "Solo un poquito es dulce", "body": "Apenas 1 % del agua del planeta es potable.",                         "image": "gota.png" },
-      { "type": "content", "title": "Hábitos en casa",          "body": "Cierra la llave mientras te cepillas y toma duchas cortas.",        "image": "ducha.png" },
-      { "type": "content", "title": "No la ensuciemos",         "body": "Nunca tires aceite ni pilas al desagüe; contaminan ríos y mares.",  "image": "desague.png" },
-      { "type": "content", "title": "Reutiliza y recoge lluvia", "body": "Junta agua de lluvia para regar plantas y lavar el auto.",          "image": "lluvia.png" },
+      { "type": "content", 
+        "title": "Solo un poquito es dulce", 
+        "body": "Apenas 1 % del agua del planeta es potable.",
+        "image": "gota.png",
+        "audio": "solo_un_oquito_es_dulce.mp3" },
+
+      { "type": "content", 
+        "title": "Hábitos en casa",          
+        "body": "Cierra la llave mientras te cepillas y toma duchas cortas.",        
+        "image": "ducha.png",
+        "audio": "habitos_en_casa.mp3" },
+
+      { "type": "content", 
+        "title": "No la ensuciemos",        
+        "body": "Nunca tires aceite ni pilas al desagüe; contaminan ríos y mares.",  
+        "image": "desague.png",
+        "audio": "no_la_ensuciemos.mp3" },
+
+      { "type": "content", 
+        "title": "Reutiliza y recoge lluvia", 
+        "body": "Junta agua de lluvia para regar plantas y lavar el auto.",          
+        "image": "lluvia.png",
+        "audio": "reutiliza_y_recoge_lluvia.mp3" },
 
       { "type": "preQuiz", "title": "¡Vamos al Quiz!", "body": "¿Preparado para demostrar lo que sabes?" }
     ],
@@ -53,10 +91,29 @@
       { "type": "intro",   "title": "Respira profundo", "body": "Conozcamos cómo mantener nuestro aire limpio y saludable." },
       { "type": "video",   "video": "air_intro.mp4" },
 
-      { "type": "content", "title": "Aire limpio = salud",      "body": "Pulmones felices dependen de un aire sin gases tóxicos.",          "image": "pulmones.png" },
-      { "type": "content", "title": "Fuentes de contaminación", "body": "Autos, fábricas y quemar basura ensucian el cielo.",               "image": "humo.png" },
-      { "type": "content", "title": "Lo que tú puedes hacer",   "body": "Camina, usa bici o comparte auto: cada viaje limpio cuenta.",      "image": "bici.png" },
-      { "type": "content", "title": "Planta un árbol",          "body": "Los árboles filtran polvo y producen oxígeno.",                    "image": "arbol.png" },
+      { "type": "content", 
+        "title": "Aire limpio = salud",      
+        "body": "Pulmones felices dependen de un aire sin gases tóxicos.",          
+        "image": "pulmones.png",
+        "audio": "aire_limpioo.mp3" },
+      
+      { "type": "content", 
+        "title": "Fuentes de contaminación", 
+        "body": "Autos, fábricas y quemar basura ensucian el cielo.",               
+        "image": "humo.png",
+        "audio": "fuente_de_contaminacion.mp3" },
+
+      { "type": "content", 
+        "title": "Lo que tú puedes hacer",   
+        "body": "Camina, usa bici o comparte auto: cada viaje limpio cuenta.",      
+        "image": "bici.png",
+        "audio": "lo_que_puedes_hacer.mp3" },
+
+      { "type": "content", 
+        "title": "Planta un árbol",          
+        "body": "Los árboles filtran polvo y producen oxígeno.",                    
+        "image": "arbol.png",
+        "audio": "planta_un_arbol.mp3" },
 
       { "type": "preQuiz", "title": "¡Vamos al Quiz!", "body": "¡Demuestra lo que aprendiste!" }
     ],
@@ -76,10 +133,26 @@
       { "type": "intro",   "title": "Menos basura, mejor planeta", "body": "Aprende a reducir, reutilizar y reciclar cada día." },
       { "type": "video",   "video": "pollution_intro.mp4" },
 
-      { "type": "content", "title": "Basura por todos lados",       "body": "Botellas plásticas pueden tardar cientos de años en degradarse.", "image": "basura.png" },
-      { "type": "content", "title": "Las 3 R",                      "body": "Reducir, Reutilizar y Reciclar son la clave para menos desechos.", "image": "3r.png" },
-      { "type": "content", "title": "Separación en casa",           "body": "Orgánicos a composta; plásticos y papel al reciclaje.",            "image": "separacion.png" },
-      { "type": "content", "title": "No al plástico de un solo uso", "body": "Usa termos, bolsas y vasos reutilizables.",                       "image": "reutilizable.png" },
+      { "type": "content", 
+      "title": "Basura por todos lados",       
+      "body": "Botellas plásticas pueden tardar cientos de años en degradarse.", 
+      "image": "basura.png",
+      "audio": "basura_por_todos_lados.mp3" },
+      
+      { "type": "content", 
+        "title": "Las 3 R",                      
+        "body": "Reducir, Reutilizar y Reciclar son la clave para menos desechos.", "image": "3r.png",
+        "audio": "las_3_r.mp3" },
+
+      { "type": "content", 
+        "title": "Separación en casa",           
+        "body": "Orgánicos a composta; plásticos y papel al reciclaje.",            "image": "separacion.png",
+        "audio": "separacion_en_cas.mp3" },
+
+      { "type": "content", 
+        "title": "No al plástico de un solo uso", 
+        "body": "Usa termos, bolsas y vasos reutilizables.",                       "image": "reutilizable.png",
+        "audio": "no_plastico.mp3"   },
 
       { "type": "preQuiz", "title": "¡Vamos al Quiz!", "body": "¡Último paso para tu insignia!" }
     ],
