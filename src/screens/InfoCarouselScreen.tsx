@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import {
   SafeAreaView,
   FlatList,
@@ -12,22 +12,30 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import lessons from '../data/lessons.json';
-import Slide, { SlideType } from '../components/Slide';
+import Slide from '../components/Slide';
 import { useAudio } from '../context/AudioContext';
 
 const { width } = Dimensions.get('window');
-const PURPLE = '#B57BFF';
-const RED    = '#F44336';
+
+const COLORS = {
+  PURPLE: '#AF70FF',
+  PURPLE_DARK: '#9353E1',
+  WHITE: '#FFFFFF',
+  GRAY_BORDER: '#E5E5E5',
+  GRAY_TEXT: '#777777',
+  GRAY_DOT: '#E5E5E5',
+  TEXT_MAIN: '#4B4B4B',
+};
 
 type Props = NativeStackScreenProps<RootStackParamList, 'InfoCarousel'>;
 
-/* --- mapas de assets --- (ajusta si cambian rutas) */
 const videoMap = {
   agriculture_intro: require('../../assets/videos/agriculture_intro.mp4'),
   water_intro:       require('../../assets/videos/water_intro.mp4'),
   air_intro:         require('../../assets/videos/air_intro.mp4'),
   pollution_intro:   require('../../assets/videos/pollution_intro.mp4'),
 };
+
 const imageMap = {
   rotacion: require('../../assets/images/infografias/rotacion.png'),
   compost: require('../../assets/images/infografias/compost.png'),
@@ -46,22 +54,21 @@ const imageMap = {
   separacion: require('../../assets/images/infografias/separacion.png'),
   reutilizable: require('../../assets/images/infografias/reutilizable.png'),
 };
-/* --------------------------------------------- */
 
 export default function InfoCarouselScreen({ route, navigation }: Props) {
   const { lessonId } = route.params;
   const insets = useSafeAreaInsets();
-  const { pauseMusic, resumeMusic } = useAudio();
+  const { pauseMusic, resumeMusic, playNarration, stopNarration, sfx } = useAudio();
 
-  /* construir slides (ya incluyen intro y preQuiz en JSON) */
-  const slides: SlideType[] = lessons[lessonId].slides.map((s:any) => {
-    if (s.type==='video') {
+  const slides = (lessons as any)[lessonId].slides.map((s: any) => {
+    if (s.type === 'video') {
       const videoKey = s.video.replace('.mp4', '') as keyof typeof videoMap;
       return { ...s, video: videoMap[videoKey] };
     }
-    if (s.type==='content') {
+    if (s.type === 'content') {
       const key = s.image.replace('.png', '') as keyof typeof imageMap;
-      return { ...s, image: imageMap[key] };
+      const audioKey = s.audio ? s.audio.replace('.mp3', '') : null;
+      return { ...s, image: imageMap[key], audioKey: audioKey }; 
     }
     return s;
   });
@@ -69,16 +76,33 @@ export default function InfoCarouselScreen({ route, navigation }: Props) {
   const flat = useRef<FlatList<any>>(null);
   const [index, setIndex] = useState(0);
 
+  useEffect(() => {
+    const currentSlide = slides[index];
+    if (currentSlide?.type === 'content' && currentSlide.audioKey) {
+      playNarration(currentSlide.audioKey);
+    } else {
+      stopNarration();
+    }
+    return () => { stopNarration(); };
+  }, [index]);
+
+  const handleReplay = () => {
+    const currentSlide = slides[index];
+    if (currentSlide?.audioKey) playNarration(currentSlide.audioKey);
+  };
+
   return (
     <SafeAreaView style={styles.safe}>
-      {/* botón cerrar */}
       <TouchableOpacity
-        style={[styles.close,{ top:insets.top+8 }]}
-        onPress={() => { resumeMusic(); navigation.replace('CourseSelect'); }}>
+        style={[styles.closeBtn, { top: insets.top + 10 }]}
+        onPress={() => { 
+          stopNarration(); 
+          resumeMusic(); 
+          navigation.replace('CourseSelect'); 
+        }}>
         <Text style={styles.closeTxt}>✕</Text>
       </TouchableOpacity>
 
-      {/* carrusel swipe */}
       <FlatList
         ref={flat}
         data={slides}
@@ -86,81 +110,127 @@ export default function InfoCarouselScreen({ route, navigation }: Props) {
         pagingEnabled
         bounces={false}
         showsHorizontalScrollIndicator={false}
-        keyExtractor={(_,i)=>i.toString()}
-        renderItem={({ item, index: idx })=>(
-          <View style={{ width }}>
-            <Slide
-              {...item}
-              play={idx === index}
-              topOffset={insets.top + 56}
-            />
-          </View>
-        )}
+        keyExtractor={(_, i) => i.toString()}
         onMomentumScrollEnd={({ nativeEvent }) => {
           const newIndex = Math.round(nativeEvent.contentOffset.x / width);
           setIndex(newIndex);
-
-          if (slides[newIndex]?.type === 'video') {
-            pauseMusic();
-          } else {
-            resumeMusic();
-          }
+          if (slides[newIndex]?.type === 'video') { pauseMusic(); } 
+          else { resumeMusic(); }
         }}
+        renderItem={({ item, index: idx }) => (
+          <View style={{ width, flex: 1 }}>
+            {/* Aumentamos el topOffset a 80 para bajar el contenido */}
+            <Slide {...item} play={idx === index} topOffset={insets.top + 80} />
+            
+            {item.type === 'content' && item.audioKey && (
+              <View style={[styles.bottomActionContainer, { bottom: insets.bottom + 110 }]}>
+                <TouchableOpacity 
+                  activeOpacity={0.8}
+                  style={styles.actionBtn3D} 
+                  onPress={handleReplay}
+                >
+                  <View style={[styles.btnInside, styles.btnWhite]}>
+                    
+                    <Text style={styles.btnText}>ESCUCHAR EXPLICACIÓN</Text>
+                  </View>
+                  <View style={[styles.btnShadow, { backgroundColor: COLORS.PURPLE }]} />
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+        )}
       />
 
-      {/* dots */}
-      <View style={styles.dots}>
-        {slides.map((_,i)=>(
-          <View
-            key={i}
+      <View style={[styles.dotsContainer, { bottom: insets.bottom + 55 }]}>
+        {slides.map((_: any, i: number) => (
+          <View 
+            key={i} 
             style={[
-              styles.dot,
-              { opacity: i===index ? 1 : 0.3, transform:[{ scale:i===index?1.2:1 }]},
-            ]}
+              styles.dot, 
+              i === index ? styles.dotActive : styles.dotInactive
+            ]} 
           />
         ))}
       </View>
 
-      {/* Quiz button - solo si no es el último slide o si es un video */}
-      {index === slides.length - 1 && slides[index]?.type !== 'video' && (
-        <TouchableOpacity
-          style={[
-            styles.quizBtn,
-            { bottom: insets.bottom + 68 },
-          ]}
-          onPress={() => navigation.replace('Quiz', { lessonId })}
-        >
-          <Text style={styles.quizBtnTxt}>Ir al Quiz</Text>
-        </TouchableOpacity>
+      {index === slides.length - 1 && (
+        <View style={[styles.bottomActionContainer, { bottom: insets.bottom + 20 }]}>
+          <TouchableOpacity
+            activeOpacity={0.9}
+            style={styles.actionBtn3D}
+            onPress={() => { 
+              sfx('next'); 
+              stopNarration(); 
+              navigation.replace('Quiz', { lessonId }); 
+            }}
+          >
+            <View style={[styles.btnInside, { backgroundColor: COLORS.PURPLE }]}>
+              <Text style={[styles.btnText, { color: COLORS.WHITE }]}>¡EMPEZAR QUIZ!</Text>
+            </View>
+            <View style={[styles.btnShadow, { backgroundColor: COLORS.PURPLE_DARK }]} />
+          </TouchableOpacity>
+        </View>
       )}
     </SafeAreaView>
   );
 }
 
-/* ---------------- estilos ---------------- */
-const DOT = 8;
 const styles = StyleSheet.create({
-  safe:{ flex:1, backgroundColor:'#fff' },
-  close:{ position:'absolute', right:14,
-          backgroundColor:RED,width:38,height:38,borderRadius:19,
-          alignItems:'center',justifyContent:'center',zIndex:10 },
-  closeTxt:{ color:'#fff', fontSize:22, fontFamily:'NunitoBold' },
-  /* dots */
-  dots:{ position:'absolute', bottom:20, width:'100%', flexDirection:'row',
-         justifyContent:'center', alignItems:'center' },
-  dot:{ width:DOT, height:DOT, borderRadius:DOT/2,
-        backgroundColor:PURPLE, marginHorizontal:4 },
-  quizBtn: {
+  safe: { flex: 1, backgroundColor: COLORS.WHITE },
+  closeBtn: { 
+    position: 'absolute', 
+    right: 20, 
+    width: 40, 
+    height: 40, 
+    borderRadius: 20, 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    zIndex: 10,
+    backgroundColor: COLORS.WHITE,
+    borderWidth: 2,
+    borderColor: COLORS.GRAY_BORDER,
+  },
+  closeTxt: { color: '#BDBDBD', fontSize: 18, fontWeight: 'bold' },
+  bottomActionContainer: {
     position: 'absolute',
+    width: '100%',
+    paddingHorizontal: 25,
+    alignItems: 'center',
+    zIndex: 5,
+  },
+  actionBtn3D: { width: '100%', height: 60 },
+  btnInside: {
+    height: 54,
+    borderRadius: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 2,
+  },
+  btnWhite: { backgroundColor: COLORS.WHITE, borderWidth: 2, borderColor: COLORS.PURPLE },
+  btnShadow: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    height: 54,
+    borderRadius: 18,
+    zIndex: 1,
+  },
+  btnText: { 
+    fontFamily: 'Nunito-Bold', 
+    fontSize: 16, 
+    letterSpacing: 0.5,
+    textAlign: 'center',
+    color: COLORS.PURPLE
+  },
+  btnIcon: { fontSize: 22, marginRight: 10 },
+  dotsContainer: { 
+    position: 'absolute', 
+    flexDirection: 'row', 
     alignSelf: 'center',
-    backgroundColor: PURPLE,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 14,
+    alignItems: 'center'
   },
-  quizBtnTxt: {
-    color: '#fff',
-    fontFamily: 'NunitoBold',
-    fontSize: 16,
-  },
+  dot: { height: 10, borderRadius: 5, marginHorizontal: 5 },
+  dotActive: { width: 25, backgroundColor: COLORS.PURPLE },
+  dotInactive: { width: 10, backgroundColor: COLORS.GRAY_DOT },
 });
