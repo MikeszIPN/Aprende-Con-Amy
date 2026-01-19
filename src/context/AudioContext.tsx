@@ -59,6 +59,7 @@ export const AudioProvider: React.FC<React.PropsWithChildren> = ({ children }) =
   const [bgmPlayer, setBgmPlayer] = useState<ReturnType<typeof createAudioPlayer> | null>(null);
   const [musicOn, setMusicOn] = useState(true);      // preferencia guardada
   const [internallyPaused, setInternallyPaused] = useState(false); // pausa temporal
+  const [narrationPlayer, setNarrationPlayer] = useState<ReturnType<typeof createAudioPlayer> | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -149,9 +150,24 @@ export const AudioProvider: React.FC<React.PropsWithChildren> = ({ children }) =
   const playNarration = async (key: string) => {
     if (narrationMap[key]) {
       try {
+        // Stop the previous narration player if it exists
+        if (narrationPlayer) {
+          try {
+            narrationPlayer.pause();
+          } catch (e) {
+            // ignore pause errors, player might be already released
+          }
+          try {
+            narrationPlayer.release();
+          } catch (e) {
+            // ignore release errors
+          }
+        }
+        
         const player = createAudioPlayer(narrationMap[key]);
         player.volume = 1.0;
         player.play();
+        setNarrationPlayer(player);
       } catch (error) {
         console.error("Error cargando audio de narración:", error);
       }
@@ -159,7 +175,23 @@ export const AudioProvider: React.FC<React.PropsWithChildren> = ({ children }) =
   };
 
   const stopNarration = async () => {
-    // Functionality can be implemented if needed with player management
+    if (narrationPlayer) {
+      try {
+        try {
+          narrationPlayer.pause();
+        } catch (e) {
+          // ignore pause errors
+        }
+        try {
+          narrationPlayer.release();
+        } catch (e) {
+          // ignore release errors
+        }
+      } catch (error) {
+        // ignore any errors during cleanup
+      }
+      setNarrationPlayer(null);
+    }
   };
 
   return (

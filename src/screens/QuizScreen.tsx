@@ -37,7 +37,7 @@ export default function QuizScreen({ route, navigation }: Props) {
       if (isCorrect) setCorrectCount(newCorrectCount);
 
       if (index === quiz.length - 1) {
-        navigation.navigate('Results', {
+        navigation.replace('Results', {
           lessonId,
           correct: newCorrectCount,
           total: quiz.length,
@@ -149,11 +149,11 @@ const styles = StyleSheet.create({
     color: '#7E22CE', 
     fontWeight: 'bold' 
   },
-  footer: { paddingBottom: 40, alignItems: 'center' },
+  footer: { paddingBottom: 10, alignItems: 'center' },
   progressWrapper: { width: width * 0.85, height: 40, justifyContent: 'center' },
   progressIcon: { 
     position: 'absolute', 
-    top: -5, 
+    top: 5, 
     zIndex: 10,
     marginLeft: -15 
   },

@@ -96,7 +96,7 @@ export default function CourseSelectScreen({ navigation }: Props) {
         </View>
 
         {/* ---------- Botones Inferiores ---------- */}
-        <View style={[styles.footer, { paddingBottom: insets.bottom + 20 }]}>
+        <View style={[styles.footer, { paddingBottom: insets.bottom + 5 }]}>
           <TouchableOpacity
             activeOpacity={0.9}
             style={styles.homeBtn}
@@ -194,6 +194,7 @@ const styles = StyleSheet.create({
   progressContainer: {
     width: '80%',
     marginTop: 30,
+    marginBottom: 160,
     alignItems: 'center',
   },
   progressMsg: { 
