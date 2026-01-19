@@ -45,7 +45,10 @@ export default function BadgeCollectionScreen({ navigation }: Props) {
 
   const goHome = () => {
     sfx('next');
-    navigation.replace('Home');
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Home' }],
+    });
   };
 
   return (

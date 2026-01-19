@@ -1,48 +1,60 @@
 import React, { useRef, useEffect } from 'react';
 import { View, Text, Image, StyleSheet, Dimensions } from 'react-native';
-import { Video, ResizeMode } from 'expo-av';
+import { VideoView } from 'expo-video';
 
 const { width, height } = Dimensions.get('window');
 
+type BaseSlide = { topOffset?: number };
+
 export type SlideType =
-  | { type: 'intro'   ; title: string; body: string }
-  | { type: 'preQuiz' ; title: string; body: string }
-  | { type: 'content' ; title: string; body: string; image: any }
-  | {
+  | ({ type: 'intro'   ; title: string; body: string } & BaseSlide)
+  | ({ type: 'preQuiz' ; title: string; body: string } & BaseSlide)
+  | ({ type: 'content' ; title: string; body: string; image: any } & BaseSlide)
+  | ({
       type: 'video';
       video: any;
-      play?: boolean;
-      onVideoStart?: () => void;
+      player?: any;
       onVideoEnd?: () => void;
       topOffset: number;
-    };
+    } & BaseSlide);
 
 export default function Slide(props: SlideType) {
   /* ------------ VÍDEO ------------ */
   if (props.type === 'video') {
-    const ref = useRef<Video>(null);
-
-    /* reproduce / pausa según visibilidad */
+    const videoEndHandledRef = useRef(false);
+    const player = props.player;
+    const videoHeight = height - 150; // fill screen minus controls and safe areas
+    
     useEffect(() => {
-      if (!ref.current) return;
-      props.play ? ref.current.playAsync() : ref.current.pauseAsync();
-    }, [props.play]);
+      if (!player) return;
+
+      const endSub = player.addListener('playToEnd', () => {
+        if (!videoEndHandledRef.current) {
+          try { player.pause(); } catch {}
+          videoEndHandledRef.current = true;
+          props.onVideoEnd?.();
+        }
+      });
+
+      const playSub = player.addListener('playingChange', ({ isPlaying }: { isPlaying: boolean }) => {
+        // When playback starts from beginning, clear end flag
+        if (isPlaying && player.currentTime < 0.5) {
+          videoEndHandledRef.current = false;
+        }
+      });
+
+      return () => {
+        endSub.remove();
+        playSub.remove();
+      };
+    }, [player, props.onVideoEnd]);
 
     return (
-      <View style={{ paddingTop: props.topOffset }}>
-        <Video
-          ref={ref}
-          source={props.video}
-          style={{ width, height: height - props.topOffset }}
-          resizeMode={ResizeMode.CONTAIN}
-          shouldPlay={false}
-          useNativeControls={false}
+      <View style={{ width: '100%', alignItems: 'center' }}>
+        <VideoView
+          player={player}
+          style={{ width, height: videoHeight }}
           pointerEvents="none"
-          onPlaybackStatusUpdate={(s) => {
-            if (!s.isLoaded) return;
-            if (s.isPlaying && s.positionMillis < 400)  props.onVideoStart?.();
-            if (s.didJustFinish)                        props.onVideoEnd?.();
-          }}
         />
       </View>
     );

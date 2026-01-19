@@ -7,13 +7,13 @@ import {
   StyleSheet,
   TouchableOpacity,
   Dimensions,
-  SafeAreaView,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { useAudio } from '../context/AudioContext';
 import { useProgress } from '../context/ProgressContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width, height } = Dimensions.get('window');
 const PURPLE = '#B57BFF';
@@ -35,7 +35,7 @@ export default function HomeScreen({ navigation }: Props) {
       {/* ---------- Botones fijos dentro del safe-area ---------- */}
       <TouchableOpacity
         style={[styles.infoBtn, { top: insets.top + 8 }]}   // ↓ 8 px debajo del margen seguro
-        onPress={() => navigation.navigate('Credits')}>
+        onPress={() => navigation.navigate('Credits', {})}>
         <Text style={styles.infoText}>¡</Text>
       </TouchableOpacity>
 

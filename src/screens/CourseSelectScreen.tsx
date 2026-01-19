@@ -8,8 +8,8 @@ import {
   StyleSheet,
   Dimensions,
   Alert,
-  SafeAreaView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
@@ -90,7 +90,12 @@ export default function CourseSelectScreen({ navigation }: Props) {
           {/* botón HOME (siempre) */}
           <TouchableOpacity
             style={styles.homeBtn}
-            onPress={() => navigation.replace('Home')}>
+            onPress={() => {
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'Home' }],
+              });
+            }}>
             <Text style={styles.btnTxt}>Volver al Inicio</Text>
           </TouchableOpacity>
 

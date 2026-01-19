@@ -29,7 +29,7 @@ export default function QuizScreen({ route, navigation }: Props) {
     if (isCorrect) setCorrectCount((c) => c + 1);
 
     if (index === quiz.length - 1) {
-      navigation.replace('Results', {
+      navigation.navigate('Results', {
         lessonId,
         correct: isCorrect ? correctCount + 1 : correctCount,
         total: quiz.length,

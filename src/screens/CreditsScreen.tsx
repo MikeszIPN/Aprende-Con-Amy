@@ -28,7 +28,12 @@ export default function CreditsScreen({ navigation, route }: Props) {
 
     if (autoHome) {
       /* 6 s para leer créditos → Home */
-      const t = setTimeout(() => navigation.replace('Home'), 6000);
+      const t = setTimeout(() => {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Home' }],
+        });
+      }, 6000);
       return () => clearTimeout(t);
     }
   }, [autoHome]);
@@ -83,7 +88,15 @@ export default function CreditsScreen({ navigation, route }: Props) {
         </Text>
 
         {/* Botón volver */}
-        <TouchableOpacity style={styles.btn} onPress={() => navigation.replace('Home')}>
+        <TouchableOpacity
+          style={styles.btn}
+          onPress={() => {
+            navigation.reset({
+              index: 0,
+              routes: [{ name: 'Home' }],
+            });
+          }}
+        >
           <Text style={styles.btnText}>Volver al Inicio</Text>
         </TouchableOpacity>
       </ScrollView>

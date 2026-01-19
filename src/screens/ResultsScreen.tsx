@@ -65,7 +65,13 @@ export default function ResultsScreen({ route, navigation }: Props) {
 
       <TouchableOpacity
         style={styles.btn}
-        onPress={() => navigation.replace('CourseSelect')} /* vuelve al menú */
+        onPress={() => {
+          // Reset navigation to CourseSelect, clearing the stack
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'CourseSelect' }],
+          });
+        }}
       >
         <Text style={styles.btnText}>Volver al Menú</Text>
       </TouchableOpacity>

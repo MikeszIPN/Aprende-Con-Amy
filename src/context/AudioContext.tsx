@@ -1,6 +1,6 @@
 // src/context/AudioContext.tsx
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { Audio, AVPlaybackStatus } from 'expo-av';
+import { createAudioPlayer } from 'expo-audio';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type SfxName = 'correct' | 'incorrect' | 'next' | 'badge' | 'complete';
@@ -29,8 +29,8 @@ export const useAudio = () => useContext(AudioContext);
 const KEY = 'amy@music';
 
 export const AudioProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
-  const [musicSound, setMusicSound] = useState<Audio.Sound | null>(null);
-  const [musicOn, setMusicOn]       = useState(true);      // preferencia guardada
+  const [bgmPlayer, setBgmPlayer] = useState<ReturnType<typeof createAudioPlayer> | null>(null);
+  const [musicOn, setMusicOn] = useState(true);      // preferencia guardada
   const [internallyPaused, setInternallyPaused] = useState(false); // pausa temporal
 
   /* -------- carga de preferencia guardada -------- */
@@ -44,21 +44,35 @@ export const AudioProvider: React.FC<React.PropsWithChildren> = ({ children }) =
   /* -------- reproduce / detiene según preferencia -------- */
   useEffect(() => {
     (async () => {
-      if (musicOn) {
-        const { sound } = await Audio.Sound.createAsync(
-          require('../../assets/audio/bgm.mp3'),
-          { isLooping: true, volume: 0.4 },
-        );
-        setMusicSound(sound);
-        await sound.playAsync();
-      } else {
-        musicSound && (await musicSound.unloadAsync());
-        setMusicSound(null);
+      try {
+        // Crear el reproductor de música de fondo si no existe
+        if (!bgmPlayer) {
+          const player = createAudioPlayer(require('../../assets/audio/bgm.mp3'));
+          player.loop = true;
+          player.volume = 0.4;
+          setBgmPlayer(player);
+          if (musicOn) {
+            player.play();
+          }
+        } else {
+          // Controlar reproducción/pausa basado en musicOn
+          if (musicOn && !bgmPlayer.playing) {
+            bgmPlayer.play();
+          } else if (!musicOn && bgmPlayer.playing) {
+            bgmPlayer.pause();
+          }
+        }
+      } catch (error) {
+        console.error('Error playing music:', error);
       }
     })();
 
-    return () => { musicSound && musicSound.unloadAsync(); };
-  }, [musicOn]);
+    return () => {
+      if (bgmPlayer && bgmPlayer.playing) {
+        bgmPlayer.pause();
+      }
+    };
+  }, [bgmPlayer, musicOn]);
 
   /* -------- helpers públicos -------- */
   const toggleMusic = () => {
@@ -67,21 +81,23 @@ export const AudioProvider: React.FC<React.PropsWithChildren> = ({ children }) =
   };
 
   const pauseMusic = async () => {
-    if (musicSound && musicOn && !internallyPaused) {
-      const status = (await musicSound.getStatusAsync()) as AVPlaybackStatus;
-      if (status.isLoaded && status.isPlaying) {
-        await musicSound.pauseAsync();
+    if (bgmPlayer && musicOn && !internallyPaused && bgmPlayer.playing) {
+      try {
+        bgmPlayer.pause();
         setInternallyPaused(true);
+      } catch (error) {
+        console.error('Error pausing music:', error);
       }
     }
   };
 
   const resumeMusic = async () => {
-    if (musicSound && internallyPaused) {
-      const status = (await musicSound.getStatusAsync()) as AVPlaybackStatus;
-      if (status.isLoaded && !status.isPlaying) {
-        await musicSound.playAsync();
+    if (bgmPlayer && internallyPaused && !bgmPlayer.playing) {
+      try {
+        bgmPlayer.play();
         setInternallyPaused(false);
+      } catch (error) {
+        console.error('Error resuming music:', error);
       }
     }
   };
@@ -95,9 +111,14 @@ export const AudioProvider: React.FC<React.PropsWithChildren> = ({ children }) =
       badge: require('../../assets/audio/badge.mp3'),
       complete: require('../../assets/audio/complete.mp3'),
     };
-    const { sound } = await Audio.Sound.createAsync(map[name], { volume: 0.8 });
-    await sound.playAsync();
-    setTimeout(() => sound.unloadAsync(), 1500);
+    try {
+      const soundPlayer = createAudioPlayer(map[name]);
+      soundPlayer.volume = 0.8;
+      soundPlayer.play();
+      setTimeout(() => soundPlayer.release(), 1500);
+    } catch (error) {
+      console.error('Error playing sound:', error);
+    }
   };
 
   return (

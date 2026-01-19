@@ -1,6 +1,5 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
-  SafeAreaView,
   FlatList,
   View,
   TouchableOpacity,
@@ -8,12 +7,14 @@ import {
   StyleSheet,
   Dimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import lessons from '../data/lessons.json';
 import Slide, { SlideType } from '../components/Slide';
 import { useAudio } from '../context/AudioContext';
+import { useVideoPlayer } from 'expo-video';
 
 const { width } = Dimensions.get('window');
 const PURPLE = '#B57BFF';
@@ -68,13 +69,44 @@ export default function InfoCarouselScreen({ route, navigation }: Props) {
 
   const flat = useRef<FlatList<any>>(null);
   const [index, setIndex] = useState(0);
+  const [videoFinished, setVideoFinished] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  /* Video player management - keep a single player instance */
+  const videoIndex = slides.findIndex((s) => s.type === 'video');
+  const videoSource = videoIndex !== -1 ? (slides[videoIndex] as any).video : null;
+  const player = useVideoPlayer(videoSource as any, (p) => {
+    p.loop = false;
+  });
+
+  // Control play/pause based on visible slide; restart only after a completed playback
+  useEffect(() => {
+    if (!player || videoIndex === -1) return;
+
+    if (index === videoIndex) {
+      if (isPlaying && !videoFinished) {
+        player.play();
+      } else {
+        player.pause();
+      }
+    } else {
+      player.pause();
+      setIsPlaying(false);
+    }
+  }, [index, videoIndex, player, isPlaying, videoFinished]);
+
+  // (No cleanup pause) to avoid native errors on fast unmount; playback is controlled before navigation
 
   return (
     <SafeAreaView style={styles.safe}>
       {/* botón cerrar */}
       <TouchableOpacity
         style={[styles.close,{ top:insets.top+8 }]}
-        onPress={() => { resumeMusic(); navigation.replace('CourseSelect'); }}>
+        onPress={() => {
+          try { player?.pause(); } catch (e) { /* ignore */ }
+          resumeMusic();
+          navigation.goBack();
+        }}>
         <Text style={styles.closeTxt}>✕</Text>
       </TouchableOpacity>
 
@@ -87,13 +119,62 @@ export default function InfoCarouselScreen({ route, navigation }: Props) {
         bounces={false}
         showsHorizontalScrollIndicator={false}
         keyExtractor={(_,i)=>i.toString()}
-        renderItem={({ item, index: idx })=>(
+        renderItem={({ item, index: idx }) => (
           <View style={{ width }}>
-            <Slide
-              {...item}
-              play={idx === index}
-              topOffset={insets.top + 56}
-            />
+            {item.type === 'video' ? (
+              <>
+                <Slide
+                  {...item}
+                  player={player}
+                  onVideoEnd={() => {
+                    setIsPlaying(false);
+                    setVideoFinished(true);
+                  }}
+                  topOffset={insets.top + 56}
+                />
+                {/* Play/Pause/Repeat control for video slide */}
+                <TouchableOpacity
+                  style={[styles.playCtrl, { bottom: insets.bottom }]}
+                  onPress={() => {
+                    if (videoFinished) {
+                      player.currentTime = 0;
+                      setVideoFinished(false);
+                      setIsPlaying(true);
+                      player?.play();
+                      return;
+                    }
+                    if (isPlaying) {
+                      player?.pause();
+                      setIsPlaying(false);
+                    } else {
+                      setIsPlaying(true);
+                      player?.play();
+                    }
+                  }}
+                >
+                  {videoFinished ? (
+                    idx === 1 ? (
+                      // On 2nd slide, show Play icon instead of Repeat
+                      <Text style={styles.playCtrlIcon}>▶</Text>
+                    ) : (
+                      <Text style={styles.playCtrlIcon}>↻</Text>
+                    )
+                  ) : isPlaying ? (
+                    <View style={styles.pauseIcon}>
+                      <View style={styles.pauseBar} />
+                      <View style={styles.pauseBar} />
+                    </View>
+                  ) : (
+                    <Text style={styles.playCtrlIcon}>▶</Text>
+                  )}
+                </TouchableOpacity>
+              </>
+            ) : (
+              <Slide
+                {...item}
+                topOffset={insets.top + 56}
+              />
+            )}
           </View>
         )}
         onMomentumScrollEnd={({ nativeEvent }) => {
@@ -128,7 +209,7 @@ export default function InfoCarouselScreen({ route, navigation }: Props) {
             styles.quizBtn,
             { bottom: insets.bottom + 68 },
           ]}
-          onPress={() => navigation.replace('Quiz', { lessonId })}
+          onPress={() => navigation.navigate('Quiz', { lessonId })}
         >
           <Text style={styles.quizBtnTxt}>Ir al Quiz</Text>
         </TouchableOpacity>
@@ -150,6 +231,20 @@ const styles = StyleSheet.create({
          justifyContent:'center', alignItems:'center' },
   dot:{ width:DOT, height:DOT, borderRadius:DOT/2,
         backgroundColor:PURPLE, marginHorizontal:4 },
+  playCtrl:{
+    position:'absolute',
+    alignSelf:'center',
+    backgroundColor:PURPLE,
+    width:56,
+    height:56,
+    borderRadius:28,
+    alignItems:'center',
+    justifyContent:'center',
+    zIndex:12,
+  },
+  playCtrlIcon:{ color:'#fff', fontSize:24, marginLeft:2 },
+  pauseIcon:{ flexDirection:'row', gap:4 },
+  pauseBar:{ width:4, height:20, backgroundColor:'#fff', borderRadius:2 },
   quizBtn: {
     position: 'absolute',
     alignSelf: 'center',
