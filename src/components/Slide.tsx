@@ -64,7 +64,7 @@ export default function Slide(props: SlideType) {
   if (props.type === 'intro')
     return (
       <View style={styles.container}>
-        <Image source={require('../../assets/images/amy/amy_idle.png')} style={styles.amy}/>
+        <Image source={require('../../assets/images/amy/amy_idle.png')} style={styles.amy} />
         <View style={styles.bubble}>
           <Text style={styles.title}>{props.title}</Text>
           <Text style={styles.body}>{props.body}</Text>
@@ -73,22 +73,64 @@ export default function Slide(props: SlideType) {
     );
 
   /* ------------ CONTENIDO / PREQUIZ ------------ */
+  const dynamicPadding = 'topOffset' in props ? props.topOffset : 100;
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: dynamicPadding, justifyContent: 'flex-start' }]}>
       {'image' in props && (
         <Image source={props.image} style={styles.image} resizeMode="contain" />
       )}
-      {'title' in props && <Text style={styles.title}>{props.title}</Text>}
-      {'body' in props &&  <Text style={styles.body}>{props.body}</Text>}
+      {'title' in props && (
+        <Text style={styles.title}>{props.title}</Text>
+      )}
+      {'body' in props && (
+        <Text style={styles.body}>{props.body}</Text>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container:{ flex:1, alignItems:'center', justifyContent:'center', padding:24 },
-  amy:{ width:width*0.4, height:width*0.4, marginBottom:20 },
-  bubble:{ backgroundColor:'#F1F1F1', borderRadius:18, padding:20, maxWidth:'90%' },
-  image:{ width:width*0.7, height:height*0.3, marginBottom:16 },
-  title:{ fontFamily:'NunitoBold', fontSize:24, textAlign:'center', marginBottom:12 },
-  body:{ fontFamily:'NunitoRegular', fontSize:16, textAlign:'center' },
+  
+  fullVideo: {
+    width: '100%',
+    flex: 1, 
+  },
+  container: { 
+    flex: 1, 
+    alignItems: 'center', 
+    paddingHorizontal: 30 
+  },
+  amy: { 
+    width: width * 0.4, 
+    height: width * 0.4, 
+    marginBottom: 20 
+  },
+  bubble: { 
+    backgroundColor: '#F1F1F1', 
+    borderRadius: 18, 
+    padding: 20, 
+    maxWidth: '90%' 
+  },
+  image: { 
+    width: width * 0.65, 
+    height: width * 0.65, 
+    marginBottom: 30 
+  },
+  title: { 
+    fontFamily: 'NunitoBold',
+    fontSize: 26,             
+    textAlign: 'center', 
+    marginBottom: 10,
+    color: '#4B4B4B',
+    lineHeight: 32           
+  },
+  body: { 
+    fontFamily: 'NunitoRegular',
+    fontSize: 18, 
+    textAlign: 'center',
+    color: '#777777',
+    lineHeight: 24,
+    paddingHorizontal: 10
+  },
 });

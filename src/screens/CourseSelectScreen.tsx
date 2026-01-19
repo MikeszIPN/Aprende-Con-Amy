@@ -1,4 +1,3 @@
-// src/screens/CourseSelectScreen.tsx
 import React from 'react';
 import {
   View,
@@ -18,11 +17,16 @@ import { useAudio } from '../context/AudioContext';
 import lessons from '../data/lessons.json';
 
 const { width } = Dimensions.get('window');
-const PURPLE = '#B57BFF';
+
+
+const PURPLE = '#A362FF'; 
+const DARK_PURPLE = '#8549DB';
+const RED = '#FF5C5C';
+const DARK_RED = '#D14242';
+const BG_CARD = '#F8F4FF';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CourseSelect'>;
 
-/* --- Mapas de insignias --- */
 const unlocked = {
   agriculture: require('../../assets/images/badges/badge_agriculture.png'),
   water:       require('../../assets/images/badges/badge_water.png'),
@@ -59,36 +63,42 @@ export default function CourseSelectScreen({ navigation }: Props) {
       <View style={styles.container}>
         <Text style={styles.heading}>Selecciona el curso</Text>
 
-        {/* ---------- rejilla 2×2 ---------- */}
+        {/* ---------- Rejilla de Cursos ---------- */}
         <View style={styles.grid}>
           {lessons.map((lesson, i) => {
-            const key       = lesson.key as keyof typeof unlocked;
-            const completed = progress.badges[i];
-            const img       = completed ? unlocked[key] : locked[key];
+            const key = lesson.key as keyof typeof unlocked;
+            const isCompleted = progress.badges[i];
+            const img = isCompleted ? unlocked[key] : locked[key];
+            
             return (
               <TouchableOpacity
                 key={key}
-                style={styles.card}
+                style={[styles.card, isCompleted && styles.cardCompleted]}
                 onPress={() => handleSelect(i)}
-                activeOpacity={0.8}>
-                <Image source={img} style={styles.badge} resizeMode="contain" />
+                activeOpacity={0.9}>
+                <View style={styles.badgeContainer}>
+                  <Image source={img} style={styles.badge} resizeMode="contain" />
+                </View>
                 <Text style={styles.cardLabel}>{lesson.title}</Text>
               </TouchableOpacity>
             );
           })}
         </View>
 
-        {/* ---------- mensaje progreso ---------- */}
-        <Text style={styles.progressMsg}>
-          {percent === 100
-            ? '¡Felicidades, curso completado!'
-            : `Llevas ${percent}% del curso.`}
-        </Text>
+        {/* ---------- Barra de Progreso Visual ---------- */}
+        <View style={styles.progressContainer}>
+           <Text style={styles.progressMsg}>
+            {percent === 100 ? '¡Dominas todos los temas!' : `Progreso: ${percent}%`}
+          </Text>
+          <View style={styles.progressBarBg}>
+            <View style={[styles.progressBarFill, { width: `${percent}%` }]} />
+          </View>
+        </View>
 
-        {/* ---------- zona inferior ---------- */}
-        <View style={[styles.footer, { paddingBottom: insets.bottom + 12 }]}>
-          {/* botón HOME (siempre) */}
+        {/* ---------- Botones Inferiores ---------- */}
+        <View style={[styles.footer, { paddingBottom: insets.bottom + 20 }]}>
           <TouchableOpacity
+            activeOpacity={0.9}
             style={styles.homeBtn}
             onPress={() => {
               navigation.reset({
@@ -99,9 +109,9 @@ export default function CourseSelectScreen({ navigation }: Props) {
             <Text style={styles.btnTxt}>Volver al Inicio</Text>
           </TouchableOpacity>
 
-          {/* botón RESET (solo si todo completado) */}
           {allDone && (
             <TouchableOpacity
+              activeOpacity={0.9}
               style={styles.resetBtn}
               onPress={() =>
                 Alert.alert(
@@ -109,15 +119,11 @@ export default function CourseSelectScreen({ navigation }: Props) {
                   '¿Seguro que deseas reiniciar tu progreso?',
                   [
                     { text: 'Cancelar', style: 'cancel' },
-                    {
-                      text: 'Reiniciar',
-                      style: 'destructive',
-                      onPress: reset,
-                    },
+                    { text: 'Reiniciar', style: 'destructive', onPress: reset },
                   ],
                 )
               }>
-              <Text style={styles.btnTxt}>Reiniciar progreso</Text>
+              <Text style={styles.btnTxt}>REINICIAR PROGRESO</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -126,29 +132,119 @@ export default function CourseSelectScreen({ navigation }: Props) {
   );
 }
 
-/* ---------------- estilos ---------------- */
 const CARD_W = (width - 60) / 2;
 
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: '#fff',
-    paddingTop: 24, // added padding so content doesn't overlap notifications
   },
   container: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'center', // centers content vertically
+    paddingTop: 20,
   },
-  gridWrap: { flex: 1, justifyContent: 'center', width: '100%' },
-  heading:{ fontFamily:'NunitoBold', fontSize:28, marginBottom:14 },
-  grid:{ flexDirection:'row', flexWrap:'wrap', justifyContent:'center' },
-  card:{ width:CARD_W, alignItems:'center', margin:10 },
-  badge:{ width:CARD_W, height:CARD_W, borderRadius:16 },
-  cardLabel:{ marginTop:6, fontFamily:'NunitoBold', textAlign:'center' },
-  progressMsg:{ marginVertical:16, fontFamily:'NunitoRegular', fontSize:16 },
-  footer:{ width: '100%', alignItems: 'center', position: 'absolute', bottom: 0, paddingBottom: 12 },
-  homeBtn:{ backgroundColor:PURPLE, padding:12, borderRadius:14, width:'70%', alignItems:'center' },
-  resetBtn:{ backgroundColor:'#F44336', padding:12, borderRadius:14, width:'70%', alignItems:'center', marginTop:10 },
-  btnTxt:{ color:'#fff', fontFamily:'NunitoBold', fontSize:16 },
+  heading: { 
+    fontFamily: 'NunitoBold', 
+    fontSize: 28, 
+    color: PURPLE,
+    marginBottom: 20,
+    fontWeight: '800'
+  },
+  grid: { 
+    flexDirection: 'row', 
+    flexWrap: 'wrap', 
+    justifyContent: 'center',
+    width: '100%' 
+  },
+
+  card: { 
+    width: CARD_W, 
+    backgroundColor: BG_CARD,
+    borderRadius: 15,
+    padding: 12,
+    margin: 10,
+    alignItems: 'center',
+    borderBottomWidth: 4,
+    borderBottomColor: '#D1C4E9',
+  },
+  cardCompleted: {
+    backgroundColor: '#F0FFF0',
+    borderBottomColor: '#C2E0C2',
+  },
+  badgeContainer: {
+    width: '100%',
+    aspectRatio: 1,
+    marginBottom: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  badge: { 
+    width: '90%', 
+    height: '90%',
+  },
+  cardLabel: { 
+    fontFamily: 'NunitoBold', 
+    textAlign: 'center', 
+    fontSize: 14, 
+    color: '#444',
+    fontWeight: '700'
+  },
+
+  progressContainer: {
+    width: '80%',
+    marginTop: 30,
+    alignItems: 'center',
+  },
+  progressMsg: { 
+    fontFamily: 'NunitoBold', 
+    fontSize: 18, 
+    marginBottom: 8,
+    color: '#666'
+  },
+  progressBarBg: {
+    width: '100%',
+    height: 12,
+    backgroundColor: '#EEE',
+    borderRadius: 6,
+    overflow: 'hidden',
+  },
+  progressBarFill: {
+    height: '100%',
+    backgroundColor: '#4CAF50', // Verde de progreso
+    borderRadius: 6,
+  },
+
+  footer: { 
+    width: '100%', 
+    alignItems: 'center', 
+    position: 'absolute', 
+    bottom: 0 
+  },
+  homeBtn: { 
+    backgroundColor: PURPLE, 
+    width: '85%', 
+    paddingVertical: 16, 
+    borderRadius: 12, 
+    alignItems: 'center',
+    borderBottomWidth: 5,
+    borderBottomColor: DARK_PURPLE,
+  },
+  resetBtn: { 
+    backgroundColor: RED, 
+    width: '85%', 
+    paddingVertical: 16, 
+    borderRadius: 12, 
+    alignItems: 'center', 
+    marginTop: 15,
+    borderBottomWidth: 5,
+    borderBottomColor: DARK_RED,
+  },
+  btnTxt: { 
+    color: '#fff', 
+    fontFamily: 'NunitoBold', 
+    fontSize: 18, 
+    fontWeight: '800',
+    letterSpacing: 1
+  },
 });
