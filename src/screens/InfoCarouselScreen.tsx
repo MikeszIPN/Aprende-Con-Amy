@@ -80,7 +80,7 @@ export default function InfoCarouselScreen({ route, navigation }: Props) {
   const [isPlaying, setIsPlaying] = useState(false);
 
   /* Video player management - keep a single player instance */
-  const videoIndex = slides.findIndex((s) => s.type === 'video');
+  const videoIndex = slides.findIndex((s: any) => s.type === 'video');
   const videoSource = videoIndex !== -1 ? (slides[videoIndex] as any).video : null;
   const player = useVideoPlayer(videoSource as any, (p) => {
     p.loop = false;
@@ -140,7 +140,7 @@ export default function InfoCarouselScreen({ route, navigation }: Props) {
         showsHorizontalScrollIndicator={false}
         keyExtractor={(_,i)=>i.toString()}
         renderItem={({ item, index: idx }) => (
-          <View style={{ width }}>
+          <View style={{ width, flex: 1 }}>
             {item.type === 'video' ? (
               <>
                 <Slide
@@ -190,10 +190,28 @@ export default function InfoCarouselScreen({ route, navigation }: Props) {
                 </TouchableOpacity>
               </>
             ) : (
-              <Slide
-                {...item}
-                topOffset={insets.top + 56}
-              />
+              <>
+                <Slide
+                  {...item}
+                  topOffset={insets.top + 80}
+                />
+                
+                {item.audioKey && (
+                  <View style={[styles.bottomActionContainer, { bottom: insets.bottom + 110 }]}>
+                    <TouchableOpacity 
+                      activeOpacity={0.8}
+                      style={styles.actionBtn3D} 
+                      onPress={handleReplay}
+                    >
+                      <View style={[styles.btnInside, styles.btnWhite]}>
+                        
+                        <Text style={styles.btnText}>ESCUCHAR EXPLICACIÓN</Text>
+                      </View>
+                      <View style={[styles.btnShadow, { backgroundColor: COLORS.PURPLE }]} />
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </>
             )}
           </View>
         )}
@@ -203,28 +221,6 @@ export default function InfoCarouselScreen({ route, navigation }: Props) {
           if (slides[newIndex]?.type === 'video') { pauseMusic(); } 
           else { resumeMusic(); }
         }}
-        renderItem={({ item, index: idx }) => (
-          <View style={{ width, flex: 1 }}>
-            {/* Aumentamos el topOffset a 80 para bajar el contenido */}
-            <Slide {...item} play={idx === index} topOffset={insets.top + 80} />
-            
-            {item.type === 'content' && item.audioKey && (
-              <View style={[styles.bottomActionContainer, { bottom: insets.bottom + 110 }]}>
-                <TouchableOpacity 
-                  activeOpacity={0.8}
-                  style={styles.actionBtn3D} 
-                  onPress={handleReplay}
-                >
-                  <View style={[styles.btnInside, styles.btnWhite]}>
-                    
-                    <Text style={styles.btnText}>ESCUCHAR EXPLICACIÓN</Text>
-                  </View>
-                  <View style={[styles.btnShadow, { backgroundColor: COLORS.PURPLE }]} />
-                </TouchableOpacity>
-              </View>
-            )}
-          </View>
-        )}
       />
 
       <View style={[styles.dotsContainer, { bottom: insets.bottom + 55 }]}>
@@ -258,18 +254,16 @@ export default function InfoCarouselScreen({ route, navigation }: Props) {
 const styles = StyleSheet.create({
   safe:{ flex:1, backgroundColor:'#fff' },
   close:{ position:'absolute', right:14,
-          backgroundColor:RED,width:38,height:38,borderRadius:19,
+          backgroundColor:COLORS.PURPLE,width:38,height:38,borderRadius:19,
           alignItems:'center',justifyContent:'center',zIndex:10 },
   closeTxt:{ color:'#fff', fontSize:22, fontFamily:'NunitoBold' },
   /* dots */
-  dots:{ position:'absolute', bottom:20, width:'100%', flexDirection:'row',
+  dotsContainer:{ position:'absolute', bottom:20, width:'100%', flexDirection:'row',
          justifyContent:'center', alignItems:'center' },
-  dot:{ width:DOT, height:DOT, borderRadius:DOT/2,
-        backgroundColor:PURPLE, marginHorizontal:4 },
   playCtrl:{
     position:'absolute',
     alignSelf:'center',
-    backgroundColor:PURPLE,
+    backgroundColor:COLORS.PURPLE,
     width:56,
     height:56,
     borderRadius:28,
@@ -286,6 +280,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 25,
     alignItems: 'center',
     zIndex: 5,
+  },
+  quizBtnTxt: {
+    fontFamily: 'Nunito-Bold',
+    fontSize: 16,
+    color: COLORS.WHITE,
   },
   actionBtn3D: { width: '100%', height: 60 },
   btnInside: {
@@ -313,11 +312,11 @@ const styles = StyleSheet.create({
     color: COLORS.PURPLE
   },
   btnIcon: { fontSize: 22, marginRight: 10 },
-  dotsContainer: { 
-    position: 'absolute', 
-    flexDirection: 'row', 
-    alignSelf: 'center',
-    alignItems: 'center'
+  bottomActionContainer: {
+    position: 'absolute',
+    width: '100%',
+    paddingHorizontal: 25,
+    alignItems: 'center',
   },
   dot: { height: 10, borderRadius: 5, marginHorizontal: 5 },
   dotActive: { width: 25, backgroundColor: COLORS.PURPLE },
