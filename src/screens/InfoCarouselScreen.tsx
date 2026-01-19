@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import {
   FlatList,
   View,
@@ -7,17 +7,17 @@ import {
   StyleSheet,
   Dimensions,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import lessons from '../data/lessons.json';
-import Slide from '../components/Slide';
+import Slide, { SlideType } from '../components/Slide';
 import { useAudio } from '../context/AudioContext';
-import { useVideoPlayer } from 'expo-video';
+import { useVideoPlayer } from 'expo-video'; // Mantenemos la librería moderna de V1
 
 const { width } = Dimensions.get('window');
 
+// 1. Usamos la paleta de colores completa de V2 para el nuevo diseño UI
 const COLORS = {
   PURPLE: '#AF70FF',
   PURPLE_DARK: '#9353E1',
@@ -26,10 +26,12 @@ const COLORS = {
   GRAY_TEXT: '#777777',
   GRAY_DOT: '#E5E5E5',
   TEXT_MAIN: '#4B4B4B',
+  RED: '#F44336', // Mantenido por si acaso, aunque usaremos el estilo V2
 };
 
 type Props = NativeStackScreenProps<RootStackParamList, 'InfoCarousel'>;
 
+/* --- Mapas de Assets --- */
 const videoMap = {
   agriculture_intro: require('../../assets/videos/agriculture_intro.mp4'),
   water_intro:       require('../../assets/videos/water_intro.mp4'),
@@ -59,37 +61,43 @@ const imageMap = {
 export default function InfoCarouselScreen({ route, navigation }: Props) {
   const { lessonId } = route.params;
   const insets = useSafeAreaInsets();
+  
+  // 2. Fusionamos hooks de audio: Pause/Resume (V1) + Narration/SFX (V2)
   const { pauseMusic, resumeMusic, playNarration, stopNarration, sfx } = useAudio();
 
-  const slides = (lessons as any)[lessonId].slides.map((s: any) => {
+  // Construcción de slides: Integramos la lógica V2 (audioKey) con la estructura V1
+  const slides: any[] = (lessons as any)[lessonId].slides.map((s: any) => {
     if (s.type === 'video') {
       const videoKey = s.video.replace('.mp4', '') as keyof typeof videoMap;
       return { ...s, video: videoMap[videoKey] };
     }
     if (s.type === 'content') {
       const key = s.image.replace('.png', '') as keyof typeof imageMap;
+      // Nueva funcionalidad V2: Extraer key de audio
       const audioKey = s.audio ? s.audio.replace('.mp3', '') : null;
-      return { ...s, image: imageMap[key], audioKey: audioKey }; 
+      return { ...s, image: imageMap[key], audioKey };
     }
     return s;
   });
 
   const flat = useRef<FlatList<any>>(null);
   const [index, setIndex] = useState(0);
+  
+  // Estados para el video (Lógica V1)
   const [videoFinished, setVideoFinished] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  /* Video player management - keep a single player instance */
-  const videoIndex = slides.findIndex((s: any) => s.type === 'video');
+  // 3. Configuración del Player (Lógica V1 robusta)
+  const videoIndex = slides.findIndex((s) => s.type === 'video');
   const videoSource = videoIndex !== -1 ? (slides[videoIndex] as any).video : null;
+  
   const player = useVideoPlayer(videoSource as any, (p) => {
     p.loop = false;
   });
 
-  // Control play/pause based on visible slide; restart only after a completed playback
+  // Efecto para controlar Play/Pause del video (V1)
   useEffect(() => {
     if (!player || videoIndex === -1) return;
-
     if (index === videoIndex) {
       if (isPlaying && !videoFinished) {
         player.play();
@@ -102,18 +110,20 @@ export default function InfoCarouselScreen({ route, navigation }: Props) {
     }
   }, [index, videoIndex, player, isPlaying, videoFinished]);
 
-  // (No cleanup pause) to avoid native errors on fast unmount; playback is controlled before navigation
-
+  // 4. Nueva Lógica V2: Reproducción automática de narración
   useEffect(() => {
     const currentSlide = slides[index];
+    // Si es contenido y tiene audio, reproducir narración
     if (currentSlide?.type === 'content' && currentSlide.audioKey) {
       playNarration(currentSlide.audioKey);
     } else {
       stopNarration();
     }
+    // Cleanup al desmontar o cambiar slide
     return () => { stopNarration(); };
   }, [index]);
 
+  // Función para re-escuchar (V2)
   const handleReplay = () => {
     const currentSlide = slides[index];
     if (currentSlide?.audioKey) playNarration(currentSlide.audioKey);
@@ -121,12 +131,14 @@ export default function InfoCarouselScreen({ route, navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
+      {/* Botón Cerrar: Estilo V2 (Borde gris) pero lógica combinada */}
       <TouchableOpacity
-        style={[styles.close,{ top:insets.top+8 }]}
+        style={[styles.closeBtn, { top: insets.top + 10 }]}
         onPress={() => {
           try { player?.pause(); } catch (e) { /* ignore */ }
-          resumeMusic();
-          navigation.goBack();
+          stopNarration(); // V2
+          resumeMusic();   // V1/V2
+          navigation.goBack(); // V1 es más seguro con goBack, V2 usaba replace
         }}>
         <Text style={styles.closeTxt}>✕</Text>
       </TouchableOpacity>
@@ -138,11 +150,22 @@ export default function InfoCarouselScreen({ route, navigation }: Props) {
         pagingEnabled
         bounces={false}
         showsHorizontalScrollIndicator={false}
-        keyExtractor={(_,i)=>i.toString()}
+        keyExtractor={(_, i) => i.toString()}
+        onMomentumScrollEnd={({ nativeEvent }) => {
+          const newIndex = Math.round(nativeEvent.contentOffset.x / width);
+          setIndex(newIndex);
+          // Lógica mixta: pausar música de fondo si hay video (V1), sino reanudar
+          if (slides[newIndex]?.type === 'video') { 
+            pauseMusic(); 
+          } else { 
+            resumeMusic(); 
+          }
+        }}
         renderItem={({ item, index: idx }) => (
           <View style={{ width, flex: 1 }}>
             {item.type === 'video' ? (
               <>
+                {/* Slide de Video: Usamos lógica V1 (expo-video + controles) */}
                 <Slide
                   {...item}
                   player={player}
@@ -150,11 +173,12 @@ export default function InfoCarouselScreen({ route, navigation }: Props) {
                     setIsPlaying(false);
                     setVideoFinished(true);
                   }}
-                  topOffset={insets.top + 56}
+                  topOffset={insets.top + 80} // Ajuste visual V2
                 />
-                {/* Play/Pause/Repeat control for video slide */}
+                
+                {/* Controles de Video (V1) - Son necesarios para la interacción */}
                 <TouchableOpacity
-                  style={[styles.playCtrl, { bottom: insets.bottom }]}
+                  style={[styles.playCtrl, { bottom: insets.bottom + 110 }]} // Ajustado altura para no chocar con diseño V2
                   onPress={() => {
                     if (videoFinished) {
                       player.currentTime = 0;
@@ -173,12 +197,7 @@ export default function InfoCarouselScreen({ route, navigation }: Props) {
                   }}
                 >
                   {videoFinished ? (
-                    idx === 1 ? (
-                      // On 2nd slide, show Play icon instead of Repeat
-                      <Text style={styles.playCtrlIcon}>▶</Text>
-                    ) : (
-                      <Text style={styles.playCtrlIcon}>↻</Text>
-                    )
+                    idx === 1 ? <Text style={styles.playCtrlIcon}>▶</Text> : <Text style={styles.playCtrlIcon}>↻</Text>
                   ) : isPlaying ? (
                     <View style={styles.pauseIcon}>
                       <View style={styles.pauseBar} />
@@ -191,11 +210,10 @@ export default function InfoCarouselScreen({ route, navigation }: Props) {
               </>
             ) : (
               <>
-                <Slide
-                  {...item}
-                  topOffset={insets.top + 80}
-                />
+                {/* Slide de Contenido */}
+                <Slide {...item} play={idx === index} topOffset={insets.top + 80} />
                 
+                {/* NUEVO V2: Botón "Escuchar Explicación" */}
                 {item.audioKey && (
                   <View style={[styles.bottomActionContainer, { bottom: insets.bottom + 110 }]}>
                     <TouchableOpacity 
@@ -204,7 +222,6 @@ export default function InfoCarouselScreen({ route, navigation }: Props) {
                       onPress={handleReplay}
                     >
                       <View style={[styles.btnInside, styles.btnWhite]}>
-                        
                         <Text style={styles.btnText}>ESCUCHAR EXPLICACIÓN</Text>
                       </View>
                       <View style={[styles.btnShadow, { backgroundColor: COLORS.PURPLE }]} />
@@ -215,14 +232,9 @@ export default function InfoCarouselScreen({ route, navigation }: Props) {
             )}
           </View>
         )}
-        onMomentumScrollEnd={({ nativeEvent }) => {
-          const newIndex = Math.round(nativeEvent.contentOffset.x / width);
-          setIndex(newIndex);
-          if (slides[newIndex]?.type === 'video') { pauseMusic(); } 
-          else { resumeMusic(); }
-        }}
       />
 
+      {/* Dots: Estilo V2 (Rectangulares) */}
       <View style={[styles.dotsContainer, { bottom: insets.bottom + 55 }]}>
         {slides.map((_: any, i: number) => (
           <View 
@@ -235,56 +247,55 @@ export default function InfoCarouselScreen({ route, navigation }: Props) {
         ))}
       </View>
 
-      {/* Quiz button - solo si no es el último slide o si es un video */}
+      {/* Botón Quiz: Lógica V1 (navegación) pero Estilo 3D de V2 */}
       {index === slides.length - 1 && slides[index]?.type !== 'video' && (
-        <TouchableOpacity
-          style={[
-            styles.quizBtn,
-            { bottom: insets.bottom + 68 },
-          ]}
-          onPress={() => navigation.navigate('Quiz', { lessonId })}
-        >
-          <Text style={styles.quizBtnTxt}>Ir al Quiz</Text>
-        </TouchableOpacity>
+        <View style={[styles.bottomActionContainer, { bottom: insets.bottom + 20 }]}>
+          <TouchableOpacity
+            activeOpacity={0.9}
+            style={styles.actionBtn3D}
+            onPress={() => { 
+              if(sfx) sfx('next'); // V2 Feature
+              stopNarration(); 
+              navigation.replace('Quiz', { lessonId }); // V1 usaba navigate, V2 replace. Replace es mejor al acabar lección.
+            }}
+          >
+            <View style={[styles.btnInside, { backgroundColor: COLORS.PURPLE }]}>
+              <Text style={[styles.btnText, { color: COLORS.WHITE }]}>¡EMPEZAR QUIZ!</Text>
+            </View>
+            <View style={[styles.btnShadow, { backgroundColor: COLORS.PURPLE_DARK }]} />
+          </TouchableOpacity>
+        </View>
       )}
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe:{ flex:1, backgroundColor:'#fff' },
-  close:{ position:'absolute', right:14,
-          backgroundColor:COLORS.PURPLE,width:38,height:38,borderRadius:19,
-          alignItems:'center',justifyContent:'center',zIndex:10 },
-  closeTxt:{ color:'#fff', fontSize:22, fontFamily:'NunitoBold' },
-  /* dots */
-  dotsContainer:{ position:'absolute', bottom:20, width:'100%', flexDirection:'row',
-         justifyContent:'center', alignItems:'center' },
-  playCtrl:{
-    position:'absolute',
-    alignSelf:'center',
-    backgroundColor:COLORS.PURPLE,
-    width:56,
-    height:56,
-    borderRadius:28,
-    alignItems:'center',
-    justifyContent:'center',
-    zIndex:12,
+  safe: { flex: 1, backgroundColor: COLORS.WHITE },
+  
+  // Estilo Close Button (V2)
+  closeBtn: { 
+    position: 'absolute', 
+    right: 20, 
+    width: 40, 
+    height: 40, 
+    borderRadius: 20, 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    zIndex: 10,
+    backgroundColor: COLORS.WHITE,
+    borderWidth: 2,
+    borderColor: COLORS.GRAY_BORDER,
   },
-  playCtrlIcon:{ color:'#fff', fontSize:24, marginLeft:2 },
-  pauseIcon:{ flexDirection:'row', gap:4 },
-  pauseBar:{ width:4, height:20, backgroundColor:'#fff', borderRadius:2 },
-  quizBtn: {
+  closeTxt: { color: '#BDBDBD', fontSize: 18, fontWeight: 'bold' },
+
+  // Estilos Botones 3D (V2)
+  bottomActionContainer: {
     position: 'absolute',
     width: '100%',
     paddingHorizontal: 25,
     alignItems: 'center',
     zIndex: 5,
-  },
-  quizBtnTxt: {
-    fontFamily: 'Nunito-Bold',
-    fontSize: 16,
-    color: COLORS.WHITE,
   },
   actionBtn3D: { width: '100%', height: 60 },
   btnInside: {
@@ -311,14 +322,31 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: COLORS.PURPLE
   },
-  btnIcon: { fontSize: 22, marginRight: 10 },
-  bottomActionContainer: {
-    position: 'absolute',
-    width: '100%',
-    paddingHorizontal: 25,
-    alignItems: 'center',
+
+  // Dots (V2)
+  dotsContainer: { 
+    position: 'absolute', 
+    flexDirection: 'row', 
+    alignSelf: 'center',
+    alignItems: 'center'
   },
   dot: { height: 10, borderRadius: 5, marginHorizontal: 5 },
   dotActive: { width: 25, backgroundColor: COLORS.PURPLE },
   dotInactive: { width: 10, backgroundColor: COLORS.GRAY_DOT },
+
+  // Controles de Video (V1 - Adaptados colores)
+  playCtrl: {
+    position: 'absolute',
+    alignSelf: 'center',
+    backgroundColor: COLORS.PURPLE,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 12,
+  },
+  playCtrlIcon: { color: '#fff', fontSize: 24, marginLeft: 2 },
+  pauseIcon: { flexDirection: 'row', gap: 4 },
+  pauseBar: { width: 4, height: 20, backgroundColor: '#fff', borderRadius: 2 },
 });
