@@ -71,7 +71,7 @@ export default function InfoCarouselScreen({ route, navigation }: Props) {
     }
     if (s.type === 'content') {
       const key = s.image.replace('.png', '') as keyof typeof imageMap;
-      // Nueva funcionalidad V2: Extraer key de audio
+      // Extraer key de audio
       const audioKey = s.audio ? s.audio.replace('.mp3', '') : null;
       return { ...s, image: imageMap[key], audioKey };
     }
@@ -85,7 +85,7 @@ export default function InfoCarouselScreen({ route, navigation }: Props) {
   const [videoFinished, setVideoFinished] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  // 3. Configuración del Player
+  // Configuración del Player
   const videoIndex = slides.findIndex((s) => s.type === 'video');
   const videoSource = videoIndex !== -1 ? (slides[videoIndex] as any).video : null;
   
@@ -108,7 +108,7 @@ export default function InfoCarouselScreen({ route, navigation }: Props) {
     }
   }, [index, videoIndex, player, isPlaying, videoFinished]);
 
-  // 4.Reproducción automática de narración
+  // Reproducción automática de narración
   useEffect(() => {
     const currentSlide = slides[index];
     // Si es contenido y tiene audio, reproducir narración
@@ -157,7 +157,7 @@ export default function InfoCarouselScreen({ route, navigation }: Props) {
         onMomentumScrollEnd={({ nativeEvent }) => {
           const newIndex = Math.round(nativeEvent.contentOffset.x / width);
           setIndex(newIndex);
-          // Lógica mixta: pausar música de fondo si hay video (V1), sino reanudar
+          // Lógica mixta: pausar música de fondo si hay video, sino reanudar
           if (slides[newIndex]?.type === 'video') { 
             pauseMusic(); 
           } else { 
@@ -167,7 +167,7 @@ export default function InfoCarouselScreen({ route, navigation }: Props) {
         renderItem={({ item, index: idx }) => (
           <View style={{ width, flex: 1 }}>
             {item.type === 'video' ? (
-              <>
+              <View style={styles.videoWrapper}>
                 {/* Slide de Video: (expo-video + controles) */}
                 <Slide
                   {...item}
@@ -176,11 +176,11 @@ export default function InfoCarouselScreen({ route, navigation }: Props) {
                     setIsPlaying(false);
                     setVideoFinished(true);
                   }}
-                  topOffset={insets.top + 80} // Ajuste visual
+                  topOffset={insets.top} // Ajuste visual
                 />
-                
-                {/* Controles de Video - Son necesarios para la interacción */}
-                <View style={[styles.playCtrlContainer, { bottom: insets.bottom }]}>
+
+                {/* Controles de Video - anclado al borde inferior del video */}
+                <View style={styles.playCtrlOverlay}>
                   <TouchableOpacity
                     style={styles.playCtrl3D}
                     onPress={() => {
@@ -215,7 +215,7 @@ export default function InfoCarouselScreen({ route, navigation }: Props) {
                     <View style={styles.playCtrlShadow} />
                   </TouchableOpacity>
                 </View>
-              </>
+              </View>
             ) : (
               <>
                 {/* Slide de Contenido */}
@@ -243,7 +243,7 @@ export default function InfoCarouselScreen({ route, navigation }: Props) {
       />
 
       {/* Dots: Estilo (Rectangulares) */}
-      <View style={[styles.dotsContainer, { bottom: insets.bottom }]}>
+      <View style={[styles.dotsContainer, { bottom: insets.bottom + 10}]}>
         {slides.map((_: any, i: number) => (
           <View 
             key={i} 
@@ -355,13 +355,19 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   dot: { height: 10, borderRadius: 5, marginHorizontal: 5 },
-  dotActive: { width: 25, backgroundColor: COLORS.PURPLE },
+  dotActive: { width: 20, backgroundColor: COLORS.PURPLE },
   dotInactive: { width: 10, backgroundColor: COLORS.GRAY_DOT },
 
   // Controles de Video 3D
-  playCtrlContainer: {
+  videoWrapper: {
+    position: 'relative',
+    width: '100%',
+    alignItems: 'center',
+  },
+  playCtrlOverlay: {
     position: 'absolute',
     alignSelf: 'center',
+    bottom: -31, // center of 62px button aligns with video bottom
     zIndex: 12,
   },
   playCtrl3D: {
