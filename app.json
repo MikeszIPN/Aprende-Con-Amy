@@ -20,7 +20,8 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.mikeszipn.aprendeamynew"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -29,6 +30,11 @@
       "expo-video",
       "expo-font",
       "expo-asset"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "0a0bce1a-c1db-4f47-9ac3-530151a807b2"
+      }
+    }
   }
 }
